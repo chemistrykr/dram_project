@@ -4,20 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository state
 
-This repository is a scaffold with almost no content yet. There is no build system, no simulator scripts, and no README. Update this file as real code, tools, and commands are added.
+The main work in this repository is building verification environments with SystemVerilog and UVM. The project is at an early stage. There is no build system, no simulator scripts, and no README yet. Update this file as real code, tools, and commands are added.
 
 ## Layout
 
-The directory names point to a hardware design and verification project, with SystemVerilog and UVM implied by the names:
-
 - `Design/`: RTL design sources (empty)
+- `Verification/env/`: UVM component hierarchy classes (env, agent, driver, monitor, sequencer, scoreboard, coverage, etc.), managed through a package
+  - `dram_env_pkg.sv`: package that imports `uvm_pkg` and `` `include``s every hierarchy class file
+  - `dram_env.sv`: top-level environment, `dram_env extends uvm_env` (sub-components are placeholders, commented out)
+- `Verification/seq/`: purpose not defined yet (empty)
 - `Verification/UVM/`: UVM testbench (empty)
 - `Verification/sv_test/`: plain SystemVerilog tests (empty)
 - `Verification/lib/`: shared verification libraries (empty)
 - `Verification/common/init`: bash environment/setup script, currently only a placeholder (`echo "hello"`)
 - `project/`: project-level files (empty)
 
-Git does not track empty directories, so only `Verification/common/init` (and top-level files) are tracked right now.
+Git does not track empty directories.
+
+## Coding conventions (Verification/env)
+
+- One class per file. The file name matches the class name (`dram_<name>.sv`), and each file has an include guard (`` `ifndef DRAM_<NAME>_SV ``).
+- Class files don't import `uvm_pkg` or include `uvm_macros.svh` themselves. The package handles that.
+- When you add a new hierarchy class, add its `` `include `` to `dram_env_pkg.sv`. Keep dependency order: low level first, then higher levels (sequencer → driver → monitor → agent → scoreboard/coverage → env).
+- Register components with `` `uvm_component_utils `` and create them with `type_id::create` in `build_phase`. Connect TLM ports in `connect_phase`.
+- Other code uses these classes through `import dram_env_pkg::*;`.
 
 ## Commands
 
